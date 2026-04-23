@@ -1,0 +1,6 @@
+*.o
+*.out
+test
+test_*
+!*.cpp
+!*.h
