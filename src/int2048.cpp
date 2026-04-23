@@ -251,7 +251,7 @@ int2048 operator*(int2048 a, const int2048 &b) {
 int2048 &int2048::operator/=(const int2048 &other) {
     bool resultNeg = negative != other.negative;
     
-    // Division using binary search
+    // Division using long division
     int2048 dividend = *this;
     dividend.negative = false;
     int2048 divisor = other;
@@ -271,16 +271,19 @@ int2048 &int2048::operator/=(const int2048 &other) {
     quotient.digits.assign(dividend.digits.size(), 0);
     int2048 remainder;
     remainder.digits.clear();
+    remainder.negative = false;
     
     for (int i = dividend.digits.size() - 1; i >= 0; --i) {
-        remainder.digits.insert(remainder.digits.begin(), dividend.digits[i]);
-        remainder.normalize();
+        // Shift remainder left by one "digit" (in base BASE) and add next digit
+        remainder *= int2048((long long)BASE);
+        remainder += int2048((long long)dividend.digits[i]);
         
+        // Binary search for quotient digit
         int left = 0, right = BASE - 1;
         while (left < right) {
             int mid = (left + right + 1) / 2;
             int2048 temp = divisor;
-            temp *= int2048(mid);
+            temp *= int2048((long long)mid);
             if (compareAbs(temp, remainder) <= 0) {
                 left = mid;
             } else {
@@ -290,7 +293,7 @@ int2048 &int2048::operator/=(const int2048 &other) {
         
         quotient.digits[i] = left;
         int2048 temp = divisor;
-        temp *= int2048(left);
+        temp *= int2048((long long)left);
         remainder -= temp;
     }
     
